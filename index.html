@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        select{
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    界:
+    <select name="select1">
+        <option value="">请选择</option>
+    </select>
+    门:
+    <select name="select2">
+        <option value="">请选择</option>
+    </select>
+    纲:
+    <select name="select3">
+        <option value="">请选择</option>
+    </select>
+    目:
+    <select name="select4">
+        <option value="">请选择</option>
+    </select>
+    科:
+    <select name="select5">
+        <option value="">请选择</option>
+    </select>
+    属:
+    <select name="select6">
+        <option value="">请选择</option>
+    </select>
+    种:
+    <select name="select7">
+        <option value="">请选择</option>
+    </select>
+    株:
+    <select name="select8">
+        <option value="">请选择</option>
+    </select>
+    <script src="./jquery-1.12.1.js"></script>
+    <script>
+        var cjAll = 9; //几级联动+1
+        $.ajax({
+            url:'data.json',
+            success:function(res){
+                setSData(JSON.parse(res).data)
+            }
+        })
+        function setSData(data){
+            var _domObj={};
+            for (let i = 0; i < data.length; i++) {
+                var el = data[i];
+                var zz = el.id.toString().length;
+                _domObj['select'+zz]+= '<option value='+el.id+' pid='+el.pid+'>'+el.name+'</option>';
+                
+            }
+            for (let n = 1; n < cjAll; n++) {
+                _domObj['select'+n] = _domObj['select'+n].replace('undefined','');
+                $('select[name="select'+n+'"]').append(_domObj['select'+n]);
+
+            }
+        }
+        $('select').on('change',function(){
+            var edOption = $(this).find('option:selected');
+            var cj = $(this).attr('name').replace('select','');
+            var id = edOption.attr('value');
+            var pid = edOption.attr('pid');
+            if(id){
+                eda(id,pid,Number(cj));
+                behind(id,Number(cj))
+            }
+        })
+        function eda(id,pid,cj){
+            if(cj >= 0){
+                $('select[name="select'+(cj-1)+'"]').val(pid);
+                var id = $('select[name="select'+(cj-1)+'"]').find('option:selected').attr('value');
+                var pid = $('select[name="select'+(cj-1)+'"]').find('option:selected').attr('pid') || 0;
+                eda(id,pid,cj-1)
+            }
+        }
+        function behind(id,cj,falg){
+            if(cj < cjAll){
+                if(falg){
+                    $('select[name="select'+(cj+1)+'"]').val('').find('option:not(0)').hide();
+                }else{
+                    $('select[name="select'+(cj+1)+'"]').val('').find('option').each(function(i,el){
+                        if(id == $(el).attr('pid')){
+                            $(el).show()
+                        }else{
+                            $(el).hide()
+                        }
+                    })
+                }
+                behind(id,cj+1,true);
+            }
+        }
+    </script>
+</body>
+</html>
